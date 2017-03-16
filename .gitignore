@@ -30,3 +30,6 @@
 
 nbproject
 build
+Makefile
+CMakeCache.txt
+
