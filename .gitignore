@@ -32,4 +32,6 @@ nbproject
 build
 Makefile
 CMakeCache.txt
-
+hiveCleaner
+CMakeFiles/
+cmake_install.cmake
