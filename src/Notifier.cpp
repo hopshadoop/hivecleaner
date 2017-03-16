@@ -33,19 +33,27 @@ Notifier::Notifier(const char* connection_string, const char* database_name,
 }
 
 void Notifier::start() {
-    LOG_INFO("ePipe starting...");
+    LOG_INFO("hiveCleaner starting...");
     ptime t1 = Utils::getCurrentTime();
 
     mHiveSDSTailer->start(mRecovery);
+    mSkvTailer->start(mRecovery);
+    mSklTailer->start(mRecovery);
 
     ptime t2 = Utils::getCurrentTime();
-    LOG_INFO("ePipe started in " << Utils::getTimeDiffInMilliseconds(t1, t2) << " msec");
+    LOG_INFO("hiveCleaner started in " << Utils::getTimeDiffInMilliseconds(t1, t2) << " msec");
     mHiveSDSTailer->waitToFinish();
+    mSkvTailer->waitToFinish();
+    mSklTailer->waitToFinish();
 }
 
 void Notifier::setup() {
     Ndb* sds_tailer_connection = create_ndb_connection(mDatabaseName);
+    Ndb* skv_tailer_connection = create_ndb_connection(mDatabaseName);
+    Ndb* skl_tailer_connection = create_ndb_connection(mDatabaseName);
     mHiveSDSTailer = new HiveSDSTailer(sds_tailer_connection, mPollMaxTimeToWait);
+    mSkvTailer = new SkewedValuesTailer(skv_tailer_connection, mPollMaxTimeToWait);
+    mSklTailer = new SkewedLocTailer(skl_tailer_connection, mPollMaxTimeToWait);
 }
 
 Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_string) {
@@ -73,7 +81,6 @@ Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_stri
 Ndb* Notifier::create_ndb_connection(const char* database) {
     Ndb* ndb = new Ndb(mClusterConnection, database);
     if (ndb->init() == -1) {
-
         LOG_NDB_API_ERROR(ndb->getNdbError());
     }
 
@@ -82,5 +89,7 @@ Ndb* Notifier::create_ndb_connection(const char* database) {
 
 Notifier::~Notifier() {
     delete mHiveSDSTailer;
+    delete mSkvTailer;
+    delete mSklTailer;
     ndb_end(2);
 }

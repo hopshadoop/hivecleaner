@@ -17,23 +17,22 @@
  */
 
 /*
- * File:   HiveSDSTailer.h
+ * File:   SkewedLocTailer.h
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#ifndef HIVESDSTAILER_H
-#define HIVESDSTAILER_H
+#ifndef SKEWEDLOCTAILER_H
+#define SKEWEDLOCTAILER_H
 
-#include "Cleaner.h"
+#include "SkewedTailer.h"
 
-class HiveSDSTailer : public Cleaner{
+class SkewedLocTailer: public SkewedTailer{
 public:
-    HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait);
-    virtual ~HiveSDSTailer();
+    SkewedLocTailer(Ndb* ndb, const int poll_maxTimeToWait);
+    virtual ~SkewedLocTailer() {}
 protected:
     static const WatchTable TABLE;
-    virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
 };
 
-#endif /* HIVESDSTAILER_H */
+#endif /* SKEWEDLOCTAILER_H */

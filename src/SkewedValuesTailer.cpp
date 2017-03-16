@@ -17,23 +17,29 @@
  */
 
 /*
- * File:   HiveSDSTailer.h
+ * File:   SkewedValuesTailer.cpp
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#ifndef HIVESDSTAILER_H
-#define HIVESDSTAILER_H
+#include "SkewedValuesTailer.h"
 
-#include "Cleaner.h"
+using namespace Utils;
+using namespace Utils::NdbC;
 
-class HiveSDSTailer : public Cleaner{
-public:
-    HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait);
-    virtual ~HiveSDSTailer();
-protected:
-    static const WatchTable TABLE;
-    virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
-};
+const string skv_table = "SKEWED_VALUES";
+const int skv_noCols = 3;
+const string skv_cols[skv_noCols] =
+    {
+      "SD_ID_OID",
+      "STRING_LIST_ID_EID",
+      "INTEGER_IDX",
+    };
 
-#endif /* HIVESDSTAILER_H */
+const int skv_noEvents = 1;
+const NdbDictionary::Event::TableEvent skv_events[skv_noEvents] = {NdbDictionary::Event::TE_DELETE};
+
+const WatchTable SkewedValuesTailer::TABLE = {skv_table, skv_cols, skv_noCols, skv_events, skv_noEvents};
+
+SkewedValuesTailer::SkewedValuesTailer(Ndb* ndb, const int poll_maxTimeToWait)
+  :SkewedTailer(ndb, TABLE, poll_maxTimeToWait) { }

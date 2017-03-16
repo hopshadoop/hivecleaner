@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright (C) 2017 Hops.io
  *
  * This program is free software; you can redistribute it and/or
@@ -17,23 +17,24 @@
  */
 
 /*
- * File:   HiveSDSTailer.h
+ * File:   SkewedTailer.h
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#ifndef HIVESDSTAILER_H
-#define HIVESDSTAILER_H
+#ifndef SKEWEDTAILER_H
+#define SKEWEDTAILER_H
 
 #include "Cleaner.h"
 
-class HiveSDSTailer : public Cleaner{
+class SkewedTailer : public Cleaner{
 public:
-    HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait);
-    virtual ~HiveSDSTailer();
+    SkewedTailer(Ndb* ndb, const WatchTable table, const int poll_maxTimeToWait)
+        :Cleaner(ndb, table, poll_maxTimeToWait) {}
+    virtual ~SkewedTailer() {}
 protected:
     static const WatchTable TABLE;
     virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
 };
 
-#endif /* HIVESDSTAILER_H */
+#endif /* SKEWEDTAILER_H */

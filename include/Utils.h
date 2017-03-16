@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* 
+/*
  * File:   Utils.h
  * Author: Mahmoud Ismail<maism@kth.se>
  *
@@ -62,7 +62,7 @@ namespace Utils {
             if (!index) LOG_NDB_API_ERROR(database->getNdbError());
             return index;
         }
-        
+
         inline static NdbOperation* getNdbOperation(NdbTransaction* transaction, const NdbDictionary::Table* table) {
             NdbOperation* op = transaction->getNdbOperation(table);
             if (!op) LOG_NDB_API_ERROR(transaction->getNdbError());
@@ -74,19 +74,19 @@ namespace Utils {
             if (!op) LOG_NDB_API_ERROR(transaction->getNdbError());
             return op;
         }
-         
+
         inline static NdbRecAttr* getNdbOperationValue(NdbOperation* op, const string& column_name) {
             NdbRecAttr* col = op->getValue(column_name.c_str());
             if (!col) LOG_NDB_API_ERROR(op->getNdbError());
             return col;
         }
-             
+
         inline static NdbIndexScanOperation* getNdbIndexScanOperation(NdbTransaction* transaction, const NdbDictionary::Index* index) {
             NdbIndexScanOperation* op = transaction->getNdbIndexScanOperation(index);
             if (!op) LOG_NDB_API_ERROR(transaction->getNdbError());
             return op;
         }
-        
+
         inline static NdbTransaction* startNdbTransaction(Ndb* connection) {
             NdbTransaction* ts = connection->startTransaction();
             if (!ts) LOG_NDB_API_ERROR(connection->getNdbError());
@@ -95,10 +95,10 @@ namespace Utils {
 
         inline static void executeTransaction(NdbTransaction* transaction, NdbTransaction::ExecType exec_type) {
             if (transaction->execute(exec_type) == -1) {
-                LOG_NDB_API_ERROR(transaction->getNdbError());
+              LOG_INFO("Error executing the transaction");
             }
         }
-        
+
         inline static string get_ndb_varchar(string str, NdbDictionary::Column::ArrayType array_type) {
             stringstream data;
             int len = str.length();
@@ -132,7 +132,7 @@ namespace Utils {
         }
 
         /*
-         * Based on The example file ndbapi_array_simple.cpp found in 
+         * Based on The example file ndbapi_array_simple.cpp found in
          * the MySQL Cluster source distribution's storage/ndb/ndbapi-examples directory
          */
 
@@ -279,4 +279,3 @@ namespace Utils {
 }
 
 #endif /* UTILS_H */
-

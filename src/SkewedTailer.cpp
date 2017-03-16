@@ -17,23 +17,25 @@
  */
 
 /*
- * File:   HiveSDSTailer.h
+ * File:   SkewedTailer.cpp
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#ifndef HIVESDSTAILER_H
-#define HIVESDSTAILER_H
+#include "SkewedTailer.h"
 
-#include "Cleaner.h"
+using namespace Utils;
+using namespace Utils::NdbC;
 
-class HiveSDSTailer : public Cleaner{
-public:
-    HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait);
-    virtual ~HiveSDSTailer();
-protected:
-    static const WatchTable TABLE;
-    virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
-};
+const string skewed_values = "SKEWED_VALUES";
+const string loc_map = "SKEWED_COL_VALUE_LOC_MAP";
+const string skewed_string = "SKEWED_STRING_LIST";
 
-#endif /* HIVESDSTAILER_H */
+const int fk = 1; //In both table sthe fk to SKEWED_STRING_LIST is the 1st column
+
+void SkewedTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]){
+  if (check(preValue, fk, skewed_values.c_str()) && check(preValue, fk, loc_map.c_str())) {
+    LOG_INFO("delete SKEWED_STRING_LIST");
+    delEntries(preValue[fk], skewed_string.c_str());
+  }
+}

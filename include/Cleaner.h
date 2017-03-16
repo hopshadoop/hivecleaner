@@ -17,23 +17,24 @@
  */
 
 /*
- * File:   HiveSDSTailer.h
+ * File:   Cleaner.h
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#ifndef HIVESDSTAILER_H
-#define HIVESDSTAILER_H
+#ifndef CLEANER_H
+#define CLEANER_H
 
-#include "Cleaner.h"
+#include "TableTailer.h"
 
-class HiveSDSTailer : public Cleaner{
+class Cleaner: public TableTailer{
 public:
-    HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait);
-    virtual ~HiveSDSTailer();
+    Cleaner(Ndb* ndb, const WatchTable table, const int poll_maxTimeToWait)
+      :TableTailer(ndb, table, poll_maxTimeToWait) { };
+    virtual ~Cleaner() { };
 protected:
-    static const WatchTable TABLE;
-    virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
+    bool check(NdbRecAttr**, int, const char*);
+    void delEntries(NdbRecAttr*, const char*);
 };
 
-#endif /* HIVESDSTAILER_H */
+#endif /* CLEANER_H */

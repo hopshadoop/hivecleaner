@@ -26,6 +26,8 @@
 #define NOTIFIER_H
 
 #include "HiveSDSTailer.h"
+#include "SkewedLocTailer.h"
+#include "SkewedValuesTailer.h"
 
 class Notifier {
 public:
@@ -42,6 +44,8 @@ private:
     const bool mRecovery;
 
     HiveSDSTailer* mHiveSDSTailer;
+    SkewedLocTailer* mSklTailer;
+    SkewedValuesTailer* mSkvTailer;
 
     Ndb* create_ndb_connection(const char* database);
     Ndb_cluster_connection* connect_to_cluster(const char *connection_string);
