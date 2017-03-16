@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* 
+/*
  * File:   Version.h.in
  * Author: Mahmoud Ismail<maism@kth.se>
  *
@@ -25,9 +25,8 @@
 #ifndef VERSION_H_IN
 #define VERSION_H_IN
 
-#define EPIPE_VERSION_MAJOR 0
-#define EPIPE_VERSION_MINOR 4
-#define EPIPE_VERSION_BUILD 0
+#define HIVECLEANER_VERSION_MAJOR 0
+#define HIVECLEANER_VERSION_MINOR 1
+#define HIVECLEANER_VERSION_BUILD 1
 
 #endif /* VERSION_H_IN */
-

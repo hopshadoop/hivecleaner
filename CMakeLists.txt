@@ -1,10 +1,11 @@
-project (ePipe)
+project (hiveCleaner)
 
 cmake_minimum_required (VERSION 2.8)
 
-set(EPIPE_VERSION_MAJOR 0)
-set(EPIPE_VERSION_MINOR 4)
-set(EPIPE_VERSION_BUILD 0)
+set(HIVECLEANER_VERSION_MAJOR 0)
+set(HIVECLEANER_VERSION_MINOR 1)
+set(HIVECLEANER_VERSION_BUILD 1)
+
 configure_file(Version.h.in ${CMAKE_SOURCE_DIR}/include/Version.h)
 
 set(Boost_USE_STATIC_LIBS ON)
@@ -30,6 +31,6 @@ SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DBOOST_SPIRIT_USE_PHOENIX_V3 -Wall -W
 
 file(GLOB SOURCE ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
-add_executable(ePipe ${SOURCE})
+add_executable(hiveCleaner ${SOURCE})
 
-target_link_libraries(ePipe ${Boost_LIBRARIES} ${CURL_LIBRARIES} ndbclient pthread)
+target_link_libraries(hiveCleaner ${Boost_LIBRARIES} ${CURL_LIBRARIES} ndbclient pthread)
