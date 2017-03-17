@@ -113,7 +113,7 @@ const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
     // Keep only the tuples with the CD_ID
     NdbScanFilter filter(pSdsScan_op);
     filter.begin(NdbScanFilter::AND);
-    if (filter.cmp(NdbScanFilter::COND_EQ, 0, tbl_id) != 0) {
+    if (filter.cmp(NdbScanFilter::COND_EQ, 0, tbl_sd_id) != 0) {
       LOG_NDB_API_ERROR(filter.getNdbError());
     }
     filter.end();
