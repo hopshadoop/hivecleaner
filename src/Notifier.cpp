@@ -36,24 +36,28 @@ void Notifier::start() {
     LOG_INFO("hiveCleaner starting...");
     ptime t1 = Utils::getCurrentTime();
 
-    mHiveSDSTailer->start(mRecovery);
+    mSDSTailer->start(mRecovery);
     mSkvTailer->start(mRecovery);
     mSklTailer->start(mRecovery);
+    mIdxsTailer->start(mRecovery);
 
     ptime t2 = Utils::getCurrentTime();
     LOG_INFO("hiveCleaner started in " << Utils::getTimeDiffInMilliseconds(t1, t2) << " msec");
-    mHiveSDSTailer->waitToFinish();
+    mSDSTailer->waitToFinish();
     mSkvTailer->waitToFinish();
     mSklTailer->waitToFinish();
+    mIdxsTailer->waitToFinish();
 }
 
 void Notifier::setup() {
     Ndb* sds_tailer_connection = create_ndb_connection(mDatabaseName);
     Ndb* skv_tailer_connection = create_ndb_connection(mDatabaseName);
     Ndb* skl_tailer_connection = create_ndb_connection(mDatabaseName);
-    mHiveSDSTailer = new HiveSDSTailer(sds_tailer_connection, mPollMaxTimeToWait);
+    Ndb* idxs_tailer_connection = create_ndb_connection(mDatabaseName);
+    mSDSTailer = new SDSTailer(sds_tailer_connection, mPollMaxTimeToWait);
     mSkvTailer = new SkewedValuesTailer(skv_tailer_connection, mPollMaxTimeToWait);
     mSklTailer = new SkewedLocTailer(skl_tailer_connection, mPollMaxTimeToWait);
+    mIdxsTailer = new IDXSTailer(idxs_tailer_connection, mPollMaxTimeToWait);
 }
 
 Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_string) {
@@ -88,8 +92,9 @@ Ndb* Notifier::create_ndb_connection(const char* database) {
 }
 
 Notifier::~Notifier() {
-    delete mHiveSDSTailer;
+    delete mSDSTailer;
     delete mSkvTailer;
     delete mSklTailer;
+    delete mIdxsTailer;
     ndb_end(2);
 }

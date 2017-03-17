@@ -17,12 +17,12 @@
  */
 
 /*
- * File:   HiveSDSTailer.cpp
+ * File:   SDSTailer.cpp
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#include "HiveSDSTailer.h"
+#include "SDSTailer.h"
 
 using namespace Utils;
 using namespace Utils::NdbC;
@@ -54,26 +54,25 @@ enum column_idx{
 const int sds_noEvents = 1;
 const NdbDictionary::Event::TableEvent sds_events[sds_noEvents] = {NdbDictionary::Event::TE_DELETE};
 
-const WatchTable HiveSDSTailer::TABLE = {sds_table, sds_cols, sds_noCols, sds_events, sds_noEvents};
+const WatchTable SDSTailer::TABLE = {sds_table, sds_cols, sds_noCols, sds_events, sds_noEvents};
 
 const string cds_table = "CDS";
 const string serdes_table = "SERDES";
 
-HiveSDSTailer::HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait)
+SDSTailer::SDSTailer(Ndb* ndb, const int poll_maxTimeToWait)
   :Cleaner(ndb, TABLE, poll_maxTimeToWait) { }
 
-void HiveSDSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]){
-  LOG_INFO("Event received. Primary Key value: " << preValue[SD_ID]->int32_value() << " CD_ID " << preValue[CD_ID]->int32_value());
+void SDSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]){
+  LOG_INFO("Delete SDS event received. Primary Key value: " << preValue[SD_ID]->u_64_value());
 
   if (check(preValue, CD_ID, sds_table.c_str())) {
     LOG_INFO("deleteCDID");
     delEntries(preValue[CD_ID], cds_table.c_str());
   }
 
-  if (check(preValue, SERDE_ID, sds_table.c_str())){
-    LOG_INFO("deleteSERDEID");
-    delEntries(preValue[SERDE_ID], serdes_table.c_str());
-  }
+  // SDS is defined as dependent in package.jdo. This means that when the SD is deleted, also the SERDE entry goes away.
+  // There is no possibility of duplicates.
+  delEntries(preValue[SERDE_ID], serdes_table.c_str());
 }
 
-HiveSDSTailer::~HiveSDSTailer() { }
+SDSTailer::~SDSTailer() { }

@@ -25,9 +25,10 @@
 #ifndef NOTIFIER_H
 #define NOTIFIER_H
 
-#include "HiveSDSTailer.h"
+#include "SDSTailer.h"
 #include "SkewedLocTailer.h"
 #include "SkewedValuesTailer.h"
+#include "IDXSTailer.h"
 
 class Notifier {
 public:
@@ -43,9 +44,10 @@ private:
     const int mPollMaxTimeToWait;
     const bool mRecovery;
 
-    HiveSDSTailer* mHiveSDSTailer;
+    SDSTailer* mSDSTailer;
     SkewedLocTailer* mSklTailer;
     SkewedValuesTailer* mSkvTailer;
+    IDXSTailer* mIdxsTailer;
 
     Ndb* create_ndb_connection(const char* database);
     Ndb_cluster_connection* connect_to_cluster(const char *connection_string);

@@ -17,23 +17,25 @@
  */
 
 /*
- * File:   HiveSDSTailer.h
+ * File:   IDXSTailer.h
  * Author: Fabio Buso <buso@kth.se>
  *
  */
 
-#ifndef HIVESDSTAILER_H
-#define HIVESDSTAILER_H
+#ifndef IDXSTAILER_H
+#define IDXSTAILER_H
 
 #include "Cleaner.h"
 
-class HiveSDSTailer : public Cleaner{
+class IDXSTailer : public Cleaner{
 public:
-    HiveSDSTailer(Ndb* ndb, const int poll_maxTimeToWait);
-    virtual ~HiveSDSTailer();
+    IDXSTailer(Ndb* ndb, const int poll_maxTimeToWait);
+    virtual ~IDXSTailer();
 protected:
     static const WatchTable TABLE;
     virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
+private:
+    const char* getHdfsIndexPath(NdbRecAttr*);
 };
 
-#endif /* HIVESDSTAILER_H */
+#endif /* IDXSTAILER_H */
