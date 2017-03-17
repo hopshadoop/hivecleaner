@@ -23,6 +23,7 @@
  */
 
 #include "IDXSTailer.h"
+#include "array_adapter.hpp"
 
 using namespace Utils;
 using namespace Utils::NdbC;
@@ -127,7 +128,10 @@ const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
     if (pSdsScan_op->nextResult(true) == 0) {
       // return the LOCATION
       LOG_INFO("----LOCATION FOUND");
-      LOG_INFO(index_path->aRef());
+      ReadOnlyArrayAdapter attr_adapter;
+      ReadOnlyArrayAdapter::ErrorType error;
+      string value = attr_adapter.get_string(index_path, error);
+      LOG_INFO(value);
 
       mNdbConnection->closeTransaction(pTransaction);
       return NULL;

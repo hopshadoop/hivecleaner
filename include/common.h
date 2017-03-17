@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* 
+/*
  * File:   common.h
  * Author: Mahmoud Ismail<maism@kth.se>
  *
@@ -39,8 +39,6 @@
 #include <boost/unordered/unordered_set.hpp>
 #include <boost/unordered/unordered_map.hpp>
 #include "vector"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include "Logger.h"
 
 using namespace std;
@@ -110,4 +108,3 @@ struct TableUnitConf {
 
 
 #endif /* COMMON_H */
-
