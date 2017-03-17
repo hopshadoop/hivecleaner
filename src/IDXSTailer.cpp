@@ -99,7 +99,7 @@ const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
   executeTransaction(pTransaction, NdbTransaction::NoCommit);
 
   if (pTblScan_op->nextResult(true) == 0) {
-    LOG("-----TABLE FOUND");
+    LOG_INFO("-----TABLE FOUND");
     // The index table is still to be deleted. Get the path.
     const NdbDictionary::Index* pSdsIndex= getIndex(pDatabase, sds_table, "PRIMARY");
     NdbScanOperation* pSdsScan_op = getNdbIndexScanOperation(pTransaction, pSdsIndex);
@@ -126,7 +126,7 @@ const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
 
     if (pSdsScan_op->nextResult(true) == 0) {
       // return the LOCATION
-      LOG("----LOCATION FOUND");
+      LOG_INFO("----LOCATION FOUND");
       return index_path->aRef();
     }
   }
