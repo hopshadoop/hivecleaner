@@ -22,6 +22,8 @@
  *
  */
 
+#include "hdfs/hdfs.h"
+
 #include "IDXSTailer.h"
 #include "array_adapter.hpp"
 
@@ -64,10 +66,18 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
 
   // Delete the index directory on Hdfs.
   // Wait 2 minutes to avoid collisions with Hive drop (table/index)
-  const char* path = getHdfsIndexPath(preValue[5]);
+  string path = getHdfsIndexPath(preValue[5]);
+  LOG_INFO("Deleting index at: " << path);
+
+  struct hdfsBuilder *builder = hdfsNewBuilder();
+  hdfsBuilderSetNameNode(builder, "AddressOfNamenode");
+  hdfsBuilderSetNameNodePort(builder, 9000);
+  hdfsFS fs = hdfsBuilderConnect(builder);
+  hdfsFreeBuilder(builder);
+
 }
 
-const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
+string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
 
   const NdbDictionary::Dictionary* pDatabase = getDatabase(mNdbConnection);
   const NdbDictionary::Index* pTblIndex= getIndex(pDatabase, tbls_table, "PRIMARY");
@@ -100,7 +110,6 @@ const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
   executeTransaction(pTransaction, NdbTransaction::NoCommit);
 
   if (pTblScan_op->nextResult(true) == 0) {
-    LOG_INFO("-----TABLE FOUND");
     // The index table is still to be deleted. Get the path.
     const NdbDictionary::Index* pSdsIndex= getIndex(pDatabase, sds_table, "PRIMARY");
     NdbScanOperation* pSdsScan_op = getNdbIndexScanOperation(pTransaction, pSdsIndex);
@@ -127,14 +136,13 @@ const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
 
     if (pSdsScan_op->nextResult(true) == 0) {
       // return the LOCATION
-      LOG_INFO("----LOCATION FOUND");
       ReadOnlyArrayAdapter attr_adapter;
       ReadOnlyArrayAdapter::ErrorType error;
       string value = attr_adapter.get_string(index_path, error);
-      LOG_INFO(value);
+      //TODO: check for errors
 
       mNdbConnection->closeTransaction(pTransaction);
-      return NULL;
+      return value;
     }
   }
 

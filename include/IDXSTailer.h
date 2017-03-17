@@ -35,7 +35,7 @@ protected:
     static const WatchTable TABLE;
     virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]);
 private:
-    const char* getHdfsIndexPath(NdbRecAttr*);
+    string getHdfsIndexPath(NdbRecAttr*);
 };
 
 #endif /* IDXSTAILER_H */
