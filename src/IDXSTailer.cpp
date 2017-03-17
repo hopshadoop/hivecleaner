@@ -63,6 +63,7 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
 
   // Delete the index directory on Hdfs.
   // Wait 2 minutes to avoid collisions with Hive drop (table/index)
+  LOG_INFO("Index path " << getHdfsIndexPath(preValue[5]));
 }
 
 const char* IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
