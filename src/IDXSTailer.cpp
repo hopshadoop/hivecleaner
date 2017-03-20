@@ -69,9 +69,14 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
   string path = getHdfsIndexPath(preValue[5]);
   LOG_INFO("Deleting index at: " << path);
 
-  if (path == NULL) {
+  if (path == "") {
     return;
   }
+
+  // remove namenode ip address from the path
+  // hdfs://ip:port/path
+  int startPath = path.find("/", 7);
+  path = path.substr(startPath);
 
   struct hdfsBuilder *builder = hdfsNewBuilder();
   hdfsBuilderSetNameNode(builder, "10.0.2.15");
@@ -81,6 +86,7 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
   int err = hdfsDelete(fs, path.c_str(), 1);
   if (err != 0) {
     LOG_WARN("Error deleting the directory: " << path);
+    LOG_WARN(hdfsGetLastError());
   }
 
   hdfsFreeBuilder(builder);
@@ -101,7 +107,7 @@ string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
   if (pTblScan_op->readTuples(NdbOperation::LM_CommittedRead, 0, 0, 1) != 0){
     std::cout << pTransaction->getNdbError().message << std::endl;
     mNdbConnection->closeTransaction(pTransaction);
-    return NULL;
+    return "";
   }
 
   // Keep only the tuples with the CD_ID
@@ -126,7 +132,7 @@ string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
     if (pSdsScan_op->readTuples(NdbOperation::LM_CommittedRead, 0, 0, 1) != 0){
       std::cout << pTransaction->getNdbError().message << std::endl;
       mNdbConnection->closeTransaction(pTransaction);
-      return NULL;
+      return "";
     }
 
     // Keep only the tuples with the CD_ID
@@ -156,7 +162,7 @@ string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
   }
 
   mNdbConnection->closeTransaction(pTransaction);
-  return NULL;
+  return "";
 }
 
 IDXSTailer::~IDXSTailer() { }
