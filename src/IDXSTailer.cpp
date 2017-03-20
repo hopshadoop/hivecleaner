@@ -69,12 +69,21 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
   string path = getHdfsIndexPath(preValue[5]);
   LOG_INFO("Deleting index at: " << path);
 
-  struct hdfsBuilder *builder = hdfsNewBuilder();
-  hdfsBuilderSetNameNode(builder, "AddressOfNamenode");
-  hdfsBuilderSetNameNodePort(builder, 9000);
-  hdfsFS fs = hdfsBuilderConnect(builder);
-  hdfsFreeBuilder(builder);
+  if (path == NULL) {
+    return;
+  }
 
+  struct hdfsBuilder *builder = hdfsNewBuilder();
+  hdfsBuilderSetNameNode(builder, "10.0.2.15");
+  hdfsBuilderSetNameNodePort(builder, 8020);
+  hdfsFS fs = hdfsBuilderConnect(builder);
+
+  int err = hdfsDelete(fs, path.c_str(), 1);
+  if (err != 0) {
+    LOG_WARN("Error deleting the directory: " << path);
+  }
+
+  hdfsFreeBuilder(builder);
 }
 
 string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
