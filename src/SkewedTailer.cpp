@@ -35,7 +35,6 @@ const int fk = 1; //In both table sthe fk to SKEWED_STRING_LIST is the 1st colum
 
 void SkewedTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]){
   if (check(preValue, fk, skewed_values.c_str()) && check(preValue, fk, loc_map.c_str())) {
-    LOG_INFO("delete SKEWED_STRING_LIST");
     delEntries(preValue[fk], skewed_string.c_str());
   }
 }

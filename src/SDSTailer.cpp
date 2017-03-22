@@ -66,7 +66,6 @@ void SDSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAt
   LOG_INFO("Delete SDS event received. Primary Key value: " << preValue[SD_ID]->u_64_value());
 
   if (check(preValue, CD_ID, sds_table.c_str())) {
-    LOG_INFO("deleteCDID");
     delEntries(preValue[CD_ID], cds_table.c_str());
   }
 

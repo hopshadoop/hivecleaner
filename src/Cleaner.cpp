@@ -87,8 +87,8 @@ void Cleaner::delEntries(NdbRecAttr* id, const char* table){
   int check;
   while((check = pScan_op->nextResult(true)) == 0){
       do {
-        LOG_INFO("inner loop");
       	pScan_op->deleteCurrentTuple();
+        LOG_INFO("Deleting from " << table << " entry with PK: " << id->u_64_value());
       } while((check = pScan_op->nextResult(false)) == 0);
 
       if(check != -1){

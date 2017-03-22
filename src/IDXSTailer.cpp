@@ -59,7 +59,7 @@ IDXSTailer::IDXSTailer(Ndb* ndb, const int poll_maxTimeToWait)
   :Cleaner(ndb, TABLE, poll_maxTimeToWait) { }
 
 void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]){
-  LOG_INFO("Index delete event received. Primary Key value: " << preValue[0]->u_64_value());
+  LOG_INFO("Delete IDXS event received. Primary Key value: " << preValue[0]->u_64_value());
 
   // Delete SDS entry related to the index
   delEntries(preValue[sd_id], sds_table.c_str());
@@ -67,7 +67,6 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
   // Delete the index directory on Hdfs.
   // Wait 2 minutes to avoid collisions with Hive drop (table/index)
   string path = getHdfsIndexPath(preValue[5]);
-  LOG_INFO("Deleting index at: " << path);
 
   if (path == "") {
     return;
@@ -88,6 +87,7 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
     LOG_WARN("Error deleting the directory: " << path);
     LOG_WARN(hdfsGetLastError());
   }
+  LOG_INFO("Deleting index at: " << path);
 
   hdfsFreeBuilder(builder);
 }
@@ -154,7 +154,6 @@ string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
       ReadOnlyArrayAdapter attr_adapter;
       ReadOnlyArrayAdapter::ErrorType error;
       string value = attr_adapter.get_string(index_path, error);
-      //TODO: check for errors
 
       mNdbConnection->closeTransaction(pTransaction);
       return value;
