@@ -40,6 +40,8 @@ void Notifier::start() {
     mSkvTailer->start(mRecovery);
     mSklTailer->start(mRecovery);
     mIdxsTailer->start(mRecovery);
+    mTblsTailer->start(mRecovery);
+    mPartTailer->start(mRecovery);
 
     ptime t2 = Utils::getCurrentTime();
     LOG_INFO("hiveCleaner started in " << Utils::getTimeDiffInMilliseconds(t1, t2) << " msec");
@@ -47,6 +49,8 @@ void Notifier::start() {
     mSkvTailer->waitToFinish();
     mSklTailer->waitToFinish();
     mIdxsTailer->waitToFinish();
+    mTblsTailer->waitToFinish();
+    mPartTailer->waitToFinish();
 }
 
 void Notifier::setup() {
@@ -54,10 +58,14 @@ void Notifier::setup() {
     Ndb* skv_tailer_connection = create_ndb_connection(mDatabaseName);
     Ndb* skl_tailer_connection = create_ndb_connection(mDatabaseName);
     Ndb* idxs_tailer_connection = create_ndb_connection(mDatabaseName);
+    Ndb* tbls_tailer_connection = create_ndb_connection(mDatabaseName);
+    Ndb* part_tailer_connection = create_ndb_connection(mDatabaseName);
     mSDSTailer = new SDSTailer(sds_tailer_connection, mPollMaxTimeToWait);
     mSkvTailer = new SkewedValuesTailer(skv_tailer_connection, mPollMaxTimeToWait);
     mSklTailer = new SkewedLocTailer(skl_tailer_connection, mPollMaxTimeToWait);
     mIdxsTailer = new IDXSTailer(idxs_tailer_connection, mPollMaxTimeToWait);
+    mTblsTailer = new TBLSTailer(tbls_tailer_connection, mPollMaxTimeToWait);
+    mPartTailer = new PARTTailer(part_tailer_connection, mPollMaxTimeToWait);
 }
 
 Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_string) {
@@ -96,5 +104,7 @@ Notifier::~Notifier() {
     delete mSkvTailer;
     delete mSklTailer;
     delete mIdxsTailer;
+    delete mTblsTailer;
+    delete mPartTailer;
     ndb_end(2);
 }
