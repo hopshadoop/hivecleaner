@@ -29,6 +29,8 @@
 #include "SkewedLocTailer.h"
 #include "SkewedValuesTailer.h"
 #include "IDXSTailer.h"
+#include "TBLSTailer.h"
+#include "PARTTailer.h"
 
 class Notifier {
 public:
@@ -48,6 +50,8 @@ private:
     SkewedLocTailer* mSklTailer;
     SkewedValuesTailer* mSkvTailer;
     IDXSTailer* mIdxsTailer;
+    TBLSTailer* mTblsTailer;
+    PARTTailer* mPartTailer;
 
     Ndb* create_ndb_connection(const char* database);
     Ndb_cluster_connection* connect_to_cluster(const char *connection_string);
