@@ -22,7 +22,7 @@ find_package(CURL 7.29.0)
 find_library(PIPES hadooppipes HINTS ${HDFS_DIR}/lib/native)
 find_library(UTILS hadooputils HINTS ${HDFS_DIR}/lib/native)
 find_library(HDFS hdfs HINTS ${HDFS_DIR}/lib/native)
-find_library(JVM jvm HINTS /usr/lib/jvm/default-jvm/jre/lib/amd64/server)
+find_library(JVM jvm HINTS /usr/lib/jvm/java-8-oracle-amd64/jre/lib/amd64/server)
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CURL_INCLUDE_DIRS})
