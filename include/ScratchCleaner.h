@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Hops.io
+ * Copyright (C) 2017 Hops.io
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,16 +17,37 @@
  */
 
 /*
- * File:   Version.h.in
- * Author: Mahmoud Ismail<maism@kth.se>
- *
+ * File:   ScratchCleaner.h
+ * Author: Fabio Buso <buso@kth.se>
  */
 
-#ifndef VERSION_H_IN
-#define VERSION_H_IN
 
-#define HIVECLEANER_VERSION_MAJOR 0
-#define HIVECLEANER_VERSION_MINOR 1
-#define HIVECLEANER_VERSION_BUILD 2
+#ifndef SCRATCHCLEANER_H
+#define SCRATCHCLEANER_H
 
-#endif /* VERSION_H_IN */
+#include "Utils.h"
+#include "stdint.h"
+#include <list>
+
+class ScratchCleaner {
+public:
+  ScratchCleaner(Ndb* ndb, string scratchDirPath, const int scratchDirExp, const int interval);
+  ~ScratchCleaner();
+
+  void start();
+private:
+  void run();
+  int32_t findInodeId(const char* dirName, int32_t parentId);
+  list<string> tokenizePath(string s);
+  list<string> getOldDirectories(int32_t parentId, int64_t timeLimit);
+
+  Ndb* mNdbConnection;
+  string mScratchDirPath;
+  const int mScratchDirExp;
+  const int mInterval;
+
+  boost::thread mThread;
+  bool mStarted;
+};
+
+#endif

@@ -25,9 +25,10 @@
 #include "Utils.h"
 #include "Notifier.h"
 
-Notifier::Notifier(const char* connection_string, const char* database_name,
-        const int poll_maxTimeToWait, const bool recovery)
-    : mDatabaseName(database_name), mPollMaxTimeToWait(poll_maxTimeToWait), mRecovery(recovery) {
+Notifier::Notifier(const char* connection_string, const char* metastore_name,
+  const char* hopsfs_name, string scratchdirs_path,  const int poll_maxTimeToWait, const int scratchdir_exp, const bool recovery)
+    : mMetastoreName(metastore_name), mHopsfsName(hopsfs_name), mPollMaxTimeToWait(poll_maxTimeToWait), mRecovery(recovery), mStracthdirs_path(scratchdirs_path),
+    mScratchdir_exp(scratchdir_exp){
     mClusterConnection = connect_to_cluster(connection_string);
     setup();
 }
@@ -42,6 +43,7 @@ void Notifier::start() {
     mIdxsTailer->start(mRecovery);
     mTblsTailer->start(mRecovery);
     mPartTailer->start(mRecovery);
+    mScratchCleaner->start();
 
     ptime t2 = Utils::getCurrentTime();
     LOG_INFO("hiveCleaner started in " << Utils::getTimeDiffInMilliseconds(t1, t2) << " msec");
@@ -54,18 +56,20 @@ void Notifier::start() {
 }
 
 void Notifier::setup() {
-    Ndb* sds_tailer_connection = create_ndb_connection(mDatabaseName);
-    Ndb* skv_tailer_connection = create_ndb_connection(mDatabaseName);
-    Ndb* skl_tailer_connection = create_ndb_connection(mDatabaseName);
-    Ndb* idxs_tailer_connection = create_ndb_connection(mDatabaseName);
-    Ndb* tbls_tailer_connection = create_ndb_connection(mDatabaseName);
-    Ndb* part_tailer_connection = create_ndb_connection(mDatabaseName);
+    Ndb* sds_tailer_connection = create_ndb_connection(mMetastoreName);
+    Ndb* skv_tailer_connection = create_ndb_connection(mMetastoreName);
+    Ndb* skl_tailer_connection = create_ndb_connection(mMetastoreName);
+    Ndb* idxs_tailer_connection = create_ndb_connection(mMetastoreName);
+    Ndb* tbls_tailer_connection = create_ndb_connection(mMetastoreName);
+    Ndb* part_tailer_connection = create_ndb_connection(mMetastoreName);
+    Ndb* scratch_cleaner_connection = create_ndb_connection(mHopsfsName);
     mSDSTailer = new SDSTailer(sds_tailer_connection, mPollMaxTimeToWait);
     mSkvTailer = new SkewedValuesTailer(skv_tailer_connection, mPollMaxTimeToWait);
     mSklTailer = new SkewedLocTailer(skl_tailer_connection, mPollMaxTimeToWait);
     mIdxsTailer = new IDXSTailer(idxs_tailer_connection, mPollMaxTimeToWait);
     mTblsTailer = new TBLSTailer(tbls_tailer_connection, mPollMaxTimeToWait);
     mPartTailer = new PARTTailer(part_tailer_connection, mPollMaxTimeToWait);
+    mScratchCleaner = new ScratchCleaner(scratch_cleaner_connection, mStracthdirs_path, mScratchdir_exp, 86400);
 }
 
 Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_string) {
@@ -74,6 +78,7 @@ Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_stri
     if (ndb_init())
         exit(EXIT_FAILURE);
 
+    LOG_INFO("Connection string " << connection_string);
     c = new Ndb_cluster_connection(connection_string);
 
     if (c->connect(RETRIES, DELAY_BETWEEN_RETRIES, VERBOSE)) {
@@ -106,5 +111,6 @@ Notifier::~Notifier() {
     delete mIdxsTailer;
     delete mTblsTailer;
     delete mPartTailer;
+    delete mScratchCleaner;
     ndb_end(2);
 }

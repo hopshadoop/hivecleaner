@@ -26,6 +26,7 @@
 #define UTILS_H
 
 #include "common.h"
+#include "hdfs.h"
 #include<cstdlib>
 #include<cstring>
 
@@ -276,6 +277,20 @@ namespace Utils {
                 return "Unkown";
         }
     }
+
+   inline static void hdfs_delete(string path) {
+      hdfsBuilder *builder = hdfsNewBuilder();
+      hdfsBuilderSetNameNode(builder, "default");
+
+      hdfsFS fs = hdfsBuilderConnect(builder); //Automatically frees the builder
+
+      if (hdfsDelete(fs, path.c_str(), 1) == 0) {
+        LOG_INFO("Deleted file/directory at: " << path);
+      } else {
+        LOG_WARN("Error deleting the directory: " << path);
+        perror("error:");
+      }
+   }
 }
 
 #endif /* UTILS_H */

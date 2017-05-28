@@ -22,10 +22,8 @@
  *
  */
 
-#include "hdfs/hdfs.h"
 
 #include "IDXSTailer.h"
-#include "array_adapter.hpp"
 
 using namespace Utils;
 using namespace Utils::NdbC;
@@ -76,20 +74,7 @@ void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecA
   // hdfs://ip:port/path
   int startPath = path.find("/", 7);
   path = path.substr(startPath);
-
-  struct hdfsBuilder *builder = hdfsNewBuilder();
-  hdfsBuilderSetNameNode(builder, "10.0.2.15");
-  hdfsBuilderSetNameNodePort(builder, 8020);
-  hdfsFS fs = hdfsBuilderConnect(builder);
-
-  int err = hdfsDelete(fs, path.c_str(), 1);
-  if (err != 0) {
-    LOG_WARN("Error deleting the directory: " << path);
-    LOG_WARN(hdfsGetLastError());
-  }
-  LOG_INFO("Deleting index at: " << path);
-
-  hdfsFreeBuilder(builder);
+  hdfs_delete(path);
 }
 
 string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
@@ -151,9 +136,7 @@ string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
 
     if (pSdsScan_op->nextResult(true) == 0) {
       // return the LOCATION
-      ReadOnlyArrayAdapter attr_adapter;
-      ReadOnlyArrayAdapter::ErrorType error;
-      string value = attr_adapter.get_string(index_path, error);
+      string value = get_string(index_path);
 
       mNdbConnection->closeTransaction(pTransaction);
       return value;
