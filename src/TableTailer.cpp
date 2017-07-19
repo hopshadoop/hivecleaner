@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* 
+/*
  * File:   TableTailer.cpp
  * Author: Mahmoud Ismail<maism@kth.se>
  *
@@ -31,44 +31,14 @@ TableTailer::TableTailer(Ndb* ndb, const WatchTable table, const int poll_maxTim
         mEventName(concat("tail-", table.mTableName)), mTable(table), mPollMaxTimeToWait(poll_maxTimeToWait){
 }
 
-void TableTailer::start(bool recovery) {
+void TableTailer::start() {
     if (mStarted) {
         return;
     }
-    
-    if(recovery){
-        LOG_INFO("start with recovery for " << mTable.mTableName);
-        recover(0);
-    }
-    
+
     createListenerEvent();
     mThread = boost::thread(&TableTailer::run, this);
     mStarted = true;
-}
-
-void TableTailer::recover(int recoverFromId) {
-    const NdbDictionary::Dictionary* database = getDatabase(mNdbConnection);
-    const NdbDictionary::Index* index = getIndex(database, mTable.mTableName, mTable.mRecoveryIndex);
-    
-    NdbTransaction* transaction = startNdbTransaction(mNdbConnection);
-    NdbIndexScanOperation* scanOp = getNdbIndexScanOperation(transaction, index);
-    
-    scanOp->readTuples(NdbOperation::LM_CommittedRead, NdbScanOperation::SF_OrderBy);
-    scanOp->setBound(mTable.mRecoveryColumn.c_str(), NdbIndexScanOperation::BoundLT, (char*) & recoverFromId);
-    
-    NdbRecAttr * row[mTable.mNoColumns];
-    
-    for (int i = 0; i < mTable.mNoColumns; i++) {
-        row[i] = scanOp->getValue(mTable.mColumnNames[i].c_str());
-    }
-
-    executeTransaction(transaction, NdbTransaction::Commit);
-    
-    while (scanOp->nextResult(true) == 0) {
-        handleEvent(NdbDictionary::Event::TE_INSERT, NULL, row);
-    }
-    
-    transaction->close();
 }
 
 void TableTailer::waitToFinish(){
@@ -94,7 +64,7 @@ void TableTailer::createListenerEvent() {
     if (!table) LOG_NDB_API_ERROR(myDict->getNdbError());
 
     NdbDictionary::Event myEvent(mEventName.c_str(), *table);
-    
+
     for(int i=0; i< mTable.mNoEvents; i++){
         myEvent.addTableEvent(mTable.mWatchEvents[i]);
     }
@@ -195,7 +165,7 @@ const char* TableTailer::getEventName(NdbDictionary::Event::TableEvent event) {
         case NdbDictionary::Event::TE_SUBSCRIBE:
             return "SUBSCRIBE";
         case NdbDictionary::Event::TE_UNSUBSCRIBE:
-            return "UNSUBSCRIBE";    
+            return "UNSUBSCRIBE";
         case NdbDictionary::Event::TE_EMPTY:
             return "EMPTY";
         case NdbDictionary::Event::TE_INCONSISTENT:
@@ -203,7 +173,7 @@ const char* TableTailer::getEventName(NdbDictionary::Event::TableEvent event) {
         case NdbDictionary::Event::TE_OUT_OF_MEMORY:
             return "OUT_OF_MEMORY";
         case NdbDictionary::Event::TE_ALL:
-            return "ALL";      
+            return "ALL";
     }
     return "UNKOWN";
 }

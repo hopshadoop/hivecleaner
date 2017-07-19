@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* 
+/*
  * File:   TableTailer.h
  * Author: Mahmoud Ismail<maism@kth.se>
  *
@@ -40,26 +40,25 @@ struct WatchTable{
 class TableTailer {
 public:
     TableTailer(Ndb* ndb, const WatchTable table, const int poll_maxTimeToWait);
-    
-    void start(bool recovery);
+
+    void start();
     void waitToFinish();
     virtual ~TableTailer();
 
 protected:
     virtual void handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]) = 0;
     Ndb* mNdbConnection;
-    
+
 private:
-    void recover(int recoverFromId);
     void createListenerEvent();
     void removeListenerEvent();
     void waitForEvents();
     void run();
     const char* getEventName(NdbDictionary::Event::TableEvent event);
-    
+
     bool mStarted;
     boost::thread mThread;
-    
+
     const string mEventName;
     const WatchTable mTable;
     const int mPollMaxTimeToWait;

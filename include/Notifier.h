@@ -36,7 +36,7 @@
 class Notifier {
 public:
     Notifier(const char* connection_string, const char* metastore_name, const char* hopsfs_name, string scratchdirs_path,
-        const int poll_maxTimeToWait, const int scratchdir_exp, const bool recovery);
+        const int poll_maxTimeToWait, const int scratchdir_exp);
     void start();
     virtual ~Notifier();
 
@@ -48,7 +48,6 @@ private:
 
     const int mPollMaxTimeToWait;
     const int mScratchdir_exp;
-    const bool mRecovery;
     string mStracthdirs_path;
 
     SDSTailer* mSDSTailer;

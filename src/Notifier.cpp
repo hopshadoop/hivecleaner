@@ -26,8 +26,8 @@
 #include "Notifier.h"
 
 Notifier::Notifier(const char* connection_string, const char* metastore_name,
-  const char* hopsfs_name, string scratchdirs_path,  const int poll_maxTimeToWait, const int scratchdir_exp, const bool recovery)
-    : mMetastoreName(metastore_name), mHopsfsName(hopsfs_name), mPollMaxTimeToWait(poll_maxTimeToWait), mRecovery(recovery), mStracthdirs_path(scratchdirs_path),
+  const char* hopsfs_name, string scratchdirs_path,  const int poll_maxTimeToWait, const int scratchdir_exp)
+    : mMetastoreName(metastore_name), mHopsfsName(hopsfs_name), mPollMaxTimeToWait(poll_maxTimeToWait), mStracthdirs_path(scratchdirs_path),
     mScratchdir_exp(scratchdir_exp){
     mClusterConnection = connect_to_cluster(connection_string);
     setup();
@@ -37,12 +37,12 @@ void Notifier::start() {
     LOG_INFO("hiveCleaner starting...");
     ptime t1 = Utils::getCurrentTime();
 
-    mSDSTailer->start(mRecovery);
-    mSkvTailer->start(mRecovery);
-    mSklTailer->start(mRecovery);
-    mIdxsTailer->start(mRecovery);
-    mTblsTailer->start(mRecovery);
-    mPartTailer->start(mRecovery);
+    mSDSTailer->start();
+    mSkvTailer->start();
+    mSklTailer->start();
+    mIdxsTailer->start();
+    mTblsTailer->start();
+    mPartTailer->start();
     mScratchCleaner->start();
 
     ptime t2 = Utils::getCurrentTime();
