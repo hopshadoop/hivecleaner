@@ -56,95 +56,13 @@ const string tbls_table = "TBLS";
 IDXSTailer::IDXSTailer(Ndb* ndb, const int poll_maxTimeToWait)
   :Cleaner(ndb, TABLE, poll_maxTimeToWait) { }
 
+// If the table has been deleted from the fs the index information will be deleted from the db
+// however the index directory will remain on the fs. Users will have to delete it from the fs as well.
 void IDXSTailer::handleEvent(NdbDictionary::Event::TableEvent eventType, NdbRecAttr* preValue[], NdbRecAttr* value[]){
   LOG_INFO("Delete IDXS event received. Primary Key value: " << preValue[0]->u_64_value());
 
   // Delete SDS entry related to the index
   delEntries(preValue[sd_id], sds_table.c_str());
-
-  // Delete the index directory on Hdfs.
-  // Wait 2 minutes to avoid collisions with Hive drop (table/index)
-  string path = getHdfsIndexPath(preValue[5]);
-
-  if (path == "") {
-    return;
-  }
-
-  // remove namenode ip address from the path
-  // hdfs://ip:port/path
-  int startPath = path.find("/", 7);
-  path = path.substr(startPath);
-  hdfs_delete(path);
-}
-
-string IDXSTailer::getHdfsIndexPath(NdbRecAttr* tbl_id) {
-
-  const NdbDictionary::Dictionary* pDatabase = getDatabase(mNdbConnection);
-  const NdbDictionary::Index* pTblIndex= getIndex(pDatabase, tbls_table, "PRIMARY");
-
-  // Define transaction
-  NdbTransaction* pTransaction = startNdbTransaction(mNdbConnection);
-
-  // Get scan operation
-  NdbScanOperation* pTblScan_op = getNdbIndexScanOperation(pTransaction, pTblIndex);
-
-  // Read tuples. Last parameter defines the batch size that will be returned when calling nextResult()
-  if (pTblScan_op->readTuples(NdbOperation::LM_CommittedRead, 0, 0, 1) != 0){
-    std::cout << pTransaction->getNdbError().message << std::endl;
-    mNdbConnection->closeTransaction(pTransaction);
-    return "";
-  }
-
-  // Keep only the tuples with the CD_ID
-  NdbScanFilter filter(pTblScan_op);
-  filter.begin(NdbScanFilter::AND);
-  if (filter.cmp(NdbScanFilter::COND_EQ, 0, tbl_id) != 0) {
-    LOG_NDB_API_ERROR(filter.getNdbError());
-  }
-  filter.end();
-
-  // Retrieve SD_ID
-  NdbRecAttr* tbl_sd_id = getNdbOperationValue(pTblScan_op, "SD_ID");
-
-  // NOCommit since I'm only reading
-  executeTransaction(pTransaction, NdbTransaction::NoCommit);
-
-  if (pTblScan_op->nextResult(true) == 0) {
-    // The index table is still to be deleted. Get the path.
-    const NdbDictionary::Index* pSdsIndex= getIndex(pDatabase, sds_table, "PRIMARY");
-    NdbScanOperation* pSdsScan_op = getNdbIndexScanOperation(pTransaction, pSdsIndex);
-
-    if (pSdsScan_op->readTuples(NdbOperation::LM_CommittedRead, 0, 0, 1) != 0){
-      std::cout << pTransaction->getNdbError().message << std::endl;
-      mNdbConnection->closeTransaction(pTransaction);
-      return "";
-    }
-
-    // Keep only the tuples with the CD_ID
-    NdbScanFilter filter(pSdsScan_op);
-    filter.begin(NdbScanFilter::AND);
-    if (filter.cmp(NdbScanFilter::COND_EQ, 0, tbl_sd_id) != 0) {
-      LOG_NDB_API_ERROR(filter.getNdbError());
-    }
-    filter.end();
-
-    // Retrieve SD_ID
-    NdbRecAttr* index_path = getNdbOperationValue(pSdsScan_op, "LOCATION");
-
-    // NOCommit since I'm only reading
-    executeTransaction(pTransaction, NdbTransaction::NoCommit);
-
-    if (pSdsScan_op->nextResult(true) == 0) {
-      // return the LOCATION
-      string value = get_string(index_path);
-
-      mNdbConnection->closeTransaction(pTransaction);
-      return value;
-    }
-  }
-
-  mNdbConnection->closeTransaction(pTransaction);
-  return "";
 }
 
 IDXSTailer::~IDXSTailer() { }

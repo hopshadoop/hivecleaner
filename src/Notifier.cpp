@@ -25,10 +25,8 @@
 #include "Utils.h"
 #include "Notifier.h"
 
-Notifier::Notifier(const char* connection_string, const char* metastore_name,
-  const char* hopsfs_name, string scratchdirs_path,  const int poll_maxTimeToWait, const int scratchdir_exp)
-    : mMetastoreName(metastore_name), mHopsfsName(hopsfs_name), mPollMaxTimeToWait(poll_maxTimeToWait), mStracthdirs_path(scratchdirs_path),
-    mScratchdir_exp(scratchdir_exp){
+Notifier::Notifier(const char* connection_string, const char* metastore_name, const char* hopsfs_name, const int poll_maxTimeToWait)
+    : mMetastoreName(metastore_name), mHopsfsName(hopsfs_name), mPollMaxTimeToWait(poll_maxTimeToWait) {
     mClusterConnection = connect_to_cluster(connection_string);
     setup();
 }
@@ -43,7 +41,6 @@ void Notifier::start() {
     mIdxsTailer->start();
     mTblsTailer->start();
     mPartTailer->start();
-    mScratchCleaner->start();
 
     ptime t2 = Utils::getCurrentTime();
     LOG_INFO("hiveCleaner started in " << Utils::getTimeDiffInMilliseconds(t1, t2) << " msec");
@@ -62,14 +59,12 @@ void Notifier::setup() {
     Ndb* idxs_tailer_connection = create_ndb_connection(mMetastoreName);
     Ndb* tbls_tailer_connection = create_ndb_connection(mMetastoreName);
     Ndb* part_tailer_connection = create_ndb_connection(mMetastoreName);
-    Ndb* scratch_cleaner_connection = create_ndb_connection(mHopsfsName);
     mSDSTailer = new SDSTailer(sds_tailer_connection, mPollMaxTimeToWait);
     mSkvTailer = new SkewedValuesTailer(skv_tailer_connection, mPollMaxTimeToWait);
     mSklTailer = new SkewedLocTailer(skl_tailer_connection, mPollMaxTimeToWait);
     mIdxsTailer = new IDXSTailer(idxs_tailer_connection, mPollMaxTimeToWait);
     mTblsTailer = new TBLSTailer(tbls_tailer_connection, mPollMaxTimeToWait);
     mPartTailer = new PARTTailer(part_tailer_connection, mPollMaxTimeToWait);
-    mScratchCleaner = new ScratchCleaner(scratch_cleaner_connection, mStracthdirs_path, mScratchdir_exp, 86400);
 }
 
 Ndb_cluster_connection* Notifier::connect_to_cluster(const char *connection_string) {
@@ -111,6 +106,5 @@ Notifier::~Notifier() {
     delete mIdxsTailer;
     delete mTblsTailer;
     delete mPartTailer;
-    delete mScratchCleaner;
     ndb_end(2);
 }

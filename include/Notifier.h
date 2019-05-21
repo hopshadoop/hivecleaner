@@ -31,12 +31,10 @@
 #include "IDXSTailer.h"
 #include "TBLSTailer.h"
 #include "PARTTailer.h"
-#include "ScratchCleaner.h"
 
 class Notifier {
 public:
-    Notifier(const char* connection_string, const char* metastore_name, const char* hopsfs_name, string scratchdirs_path,
-        const int poll_maxTimeToWait, const int scratchdir_exp);
+    Notifier(const char* connection_string, const char* metastore_name, const char* hopsfs_name, const int poll_maxTimeToWait);
     void start();
     virtual ~Notifier();
 
@@ -47,8 +45,6 @@ private:
     Ndb_cluster_connection *mClusterConnection;
 
     const int mPollMaxTimeToWait;
-    const int mScratchdir_exp;
-    string mStracthdirs_path;
 
     SDSTailer* mSDSTailer;
     SkewedLocTailer* mSklTailer;
@@ -56,7 +52,6 @@ private:
     IDXSTailer* mIdxsTailer;
     TBLSTailer* mTblsTailer;
     PARTTailer* mPartTailer;
-    ScratchCleaner* mScratchCleaner;
 
     Ndb* create_ndb_connection(const char* database);
     Ndb_cluster_connection* connect_to_cluster(const char *connection_string);
